@@ -8,7 +8,7 @@ struct ContentView: View {
     @State private var commandProcessor: CommandProcessor?
 
     var body: some View {
-        HStack {
+        HStack(spacing: 0) {
             // Left Sidebar
             VStack(alignment: .leading) {
                 if showConfigUpload {
@@ -17,20 +17,23 @@ struct ContentView: View {
                     CommandsListView(commandProcessor: commandProcessor)
                 }
             }
-            .frame(width: 300)
+            .frame(width: 250)
             .padding()
-            .background(Color.black.opacity(0.9))
+            .background(Color.black.opacity(0.95))
 
             // Right Terminal Window
             VStack {
                 ScrollView {
                     Text(output)
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .background(Color.gray.opacity(0.2))
                 HStack {
                     Text("\(config?.username ?? "user")$ ")
                         .bold()
+                        .foregroundColor(.white)
                     TextField("Enter command", text: $command, onCommit: {
                         if let processor = commandProcessor {
                             let result = processor.execute(command: command)
@@ -40,11 +43,16 @@ struct ContentView: View {
                         }
                         command = ""
                     })
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .foregroundColor(.white)
+                    .padding(5)
+                    .background(Color.black.opacity(0.8))
+                    .cornerRadius(5)
                 }
                 .padding()
+                .background(Color.black)
             }
-            .background(Color.white)
+            .background(Color.black)
         }
         .edgesIgnoringSafeArea(.all)
     }
@@ -61,15 +69,17 @@ struct ConfigUploadView: View {
         VStack {
             Image(systemName: "tray.and.arrow.down.fill")
                 .resizable()
-                .frame(width: 100, height: 100)
+                .frame(width: 80, height: 80)
                 .foregroundColor(.white)
                 .padding()
             Text("Перетащите файл конфигурации .yml для загрузки")
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .padding(.horizontal, 10)
         }
         .padding()
-        .background(isTargeted ? Color.blue.opacity(0.5) : Color.clear)
+        .background(isTargeted ? Color.blue.opacity(0.6) : Color.black.opacity(0.8))
+        .cornerRadius(10)
         .onDrop(of: ["public.file-url"], isTargeted: $isTargeted) { providers -> Bool in
             if let provider = providers.first {
                 _ = provider.loadObject(ofClass: URL.self) { url, error in
@@ -85,12 +95,10 @@ struct ConfigUploadView: View {
                                     self.showConfigUpload = false
                                 } catch {
                                     print("Failed to initialize VirtualFileSystem: \(error)")
-                                    // Could be implemented updating the UI to show an error message
                                 }
                             }
                         } catch {
                             print("Failed to load config: \(error)")
-                            // Could be implemented updating the UI to show an error message
                         }
                     }
                 }
@@ -101,15 +109,14 @@ struct ConfigUploadView: View {
     }
 }
 
-
 struct CommandsListView: View {
     var commandProcessor: CommandProcessor?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 12) {
             CommandButton(command: "ls", description: "Отображение списка файлов и директорий в текущей директории", commandProcessor: commandProcessor)
-            CommandButton(command: "cd", description: "Изменение текущей директории", commandProcessor: commandProcessor)
-            CommandButton(command: "exit", description: "Выход из терминала", commandProcessor: commandProcessor)
+            CommandButton(command: "cd", description: "Смена активной директории", commandProcessor: commandProcessor)
+            CommandButton(command: "exit", description: "Выход из текущей сессии терминала", commandProcessor: commandProcessor)
             CommandButton(command: "head", description: "Отображение первых строк файла", commandProcessor: commandProcessor)
             CommandButton(command: "cp", description: "Копирование файлов и директорий", commandProcessor: commandProcessor)
             CommandButton(command: "du", description: "Отображение использования диска", commandProcessor: commandProcessor)
@@ -137,7 +144,7 @@ struct CommandButton: View {
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.gray.opacity(0.3))
+            .background(Color.gray.opacity(0.25))
             .cornerRadius(8)
         }
         .buttonStyle(PlainButtonStyle())

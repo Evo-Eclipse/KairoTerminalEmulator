@@ -11,7 +11,7 @@ struct Config: Decodable {
 }
 
 func loadConfig(from url: URL) throws -> Config {
-    let yamlString = try String(contentsOf: url, encoding: .utf8) // Updated to specify encoding
+    let yamlString = try String(contentsOf: url, encoding: .utf8)
     let decoder = YAMLDecoder()
     let config = try decoder.decode(Config.self, from: yamlString)
     return config
@@ -33,7 +33,7 @@ class VirtualFileSystem {
         let data = try Data(contentsOf: url)
         let container = try TarContainer.open(container: data)
         for entry in container {
-            let pathComponents = entry.info.name.split(separator: "/").map { String($0) }
+            let pathComponents = entry.info.name.split(separator: "/", omittingEmptySubsequences: true).map { String($0) }
             if entry.info.type == .directory {
                 createDirectory(at: pathComponents)
             } else {
@@ -182,7 +182,7 @@ class CommandProcessor {
         for file in currentDirectory.files {
             output += file.name + "\n"
         }
-        return output
+        return output.trimmingCharacters(in: .newlines)
     }
 
     private func cd(path: String) -> String {
